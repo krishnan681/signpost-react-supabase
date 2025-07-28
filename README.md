@@ -21,6 +21,7 @@ npm install bootstrap react-bootstrap react-icons  <br>
 npm install framer-motion  <br>
 npm install swiper aos    <br>
 npm install sweetalert2   <br>
+npm install sweetalert2 sweetalert2-react-content <br>
 
 
 
