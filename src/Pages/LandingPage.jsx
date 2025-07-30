@@ -457,7 +457,7 @@ const LandingPage = () => {
 
       <div className="container  phonebook-wrapper">
       <div className="promo-box">
-        <h2>Phonebook</h2>
+        <h2>Phonebook</h2> 
         <p>
           Download our application <br />
           to find your business
