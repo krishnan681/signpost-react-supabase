@@ -25,7 +25,7 @@ const DirectoryPage = () => {
 
   const fetchDirectoryData = async () => {
     const { data, error } = await supabase
-      .from("Directory_Data")
+      .from("profiles")
       .select("*")
       .order("user_id", { ascending: false });
 

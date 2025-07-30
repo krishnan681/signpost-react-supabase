@@ -1,0 +1,50 @@
+.social-icon {
+  font-size: 1.5rem;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: #f1f1f1;
+  color: #000;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.social-icon:hover {
+  background-color: #ddd;
+}
+
+.contact-detail {
+  font-size: 0.9rem;
+  color: #555;
+}
+.section-container h6 {
+  margin-bottom: 0.75rem;
+}
+
+.Footer-Links {
+  cursor: pointer;
+  margin-bottom: 0.9rem;
+}
+
+.Footer-Links a{
+  text-decoration: none;
+  color: #555;
+}
+
+.Footer-Links li:hover {
+  color: #007bff;
+  text-decoration: underline;
+}
+
+.ContactFooter-Links {
+  cursor: pointer;
+}
+
+.ContactFooter-Links a{
+  text-decoration: none;
+  color: #555;
+}
+
+.ContactFooter-Links:hover {
+  color: #007bff;
+  text-decoration: underline;
+}

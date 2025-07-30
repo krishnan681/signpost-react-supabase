@@ -1,8 +1,7 @@
 // src/pages/Auth/Login.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-// import { supabase } from "../../services/supabaseClient";
-import { supabase } from "../../Services/supabaseClient";
+import { supabase } from "../../services/supabaseClient";
 import "../../Css/Auth/Login.css";
 import { useAuth } from "../../context/AuthContext"; // add at top
 

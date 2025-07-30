@@ -88,3 +88,77 @@ const AboutPage = () => {
 };
 
 export default AboutPage;
+
+
+   {/* Featured Stats Section */}
+
+      {/* <div className="featured-stats-section text-dark position-relative py-5">
+        <div className="overlay-bg"></div>
+        <div className="container featured-Section ">
+          <Row className="align-items-center gy-4">
+           
+            <Col lg={6} md={12}>
+              <h2 className="fw-bold mb-3">
+                Discover Our More than 15,000 Listings,
+              </h2>
+              <p className="mb-4 text-dark">
+                We connect you to the best suppliers in the industry. Our
+                directory makes discovering, comparing, and connecting seamless.
+              </p>
+
+              <ul className="list-unstyled mb-4">
+                <li className="mb-2">
+                  <span className="check-icon me-2">✔</span> Stay connected
+                </li>
+                <li className="mb-2">
+                  <span className="check-icon me-2">✔</span> Modern Listings
+                </li>
+                <li className="mb-2">
+                  <span className="check-icon me-2">✔</span> Verified Businesses
+                </li>
+                <li className="mb-2">
+                  <span className="check-icon me-2">✔</span> Well Organized
+                  Theme
+                </li>
+              </ul>
+
+              <Row>
+                <Col xs={6}>
+                  <h2 className="text-warning fw-bold">6k</h2>
+                  <p className="text-dark">Our Happy Clients</p>
+                </Col>
+                <Col xs={6}>
+                  <h2 className="text-warning fw-bold">10k</h2>
+                  <p className="text-dark">Total Verified Listings</p>
+                </Col>
+              </Row>
+              <Row>
+                <Col xs={6}>
+                  <h2 className="text-warning fw-bold">6k</h2>
+                  <p className="text-dark">Our Happy Clients</p>
+                </Col>
+                <Col xs={6}>
+                  <h2 className="text-warning fw-bold">10k</h2>
+                  <p className="text-dark">Total Verified Listings</p>
+                </Col>
+              </Row>
+            </Col>
+
+            <Col lg={6} md={12} className="position-relative text-center">
+              <div className="d-inline-block position-relative img-half-container">
+                <CircularText
+                  text="100%*Secured*Trust Worthy*"
+                  onHover="speedUp"
+                  spinDuration={20}
+                  className="rotated-circle"
+                />
+                <img
+                  src={MobileOne}
+                  className="floating-img img-fluid"
+                  alt="main"
+                />
+              </div>
+            </Col>
+          </Row>
+        </div>
+      </div> */}

@@ -409,14 +409,34 @@
 
 // src/pages/Signup.jsx
 
-import { useState } from "react";
-import { supabase } from "../../Services/supabaseClient";
+import { useState, useEffect } from "react";
+
+import { supabase } from "../../services/supabaseClient";
 import "../../Css/Auth/Signup.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const Signup = () => {
-  const [profileType, setProfileType] = useState(null); // Initially null to show selection screen
+  const [profileType, setProfileType] = useState(null);
   const [formData, setFormData] = useState({});
+  const [mobileExists, setMobileExists] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = async () => {
+      if (formData.mobile_number?.length === 10) {
+        const { data: existingUser } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("mobile_number", formData.mobile_number)
+          .single();
+
+        setMobileExists(!!existingUser);
+      } else {
+        setMobileExists(false);
+      }
+    };
+
+    checkMobile();
+  }, [formData.mobile_number]);
 
   const getInitialState = (type) => {
     return type === "business"
@@ -437,6 +457,7 @@ const Signup = () => {
           pincode: "",
           email: "",
           promo_code: "",
+          business_prefix: "M/s.", // ✅ Add this
         }
       : {
           profile_type: "person",
@@ -473,51 +494,77 @@ const Signup = () => {
     }
   };
 
-  const validateForm = () => {
-    const requiredFields =
-      profileType === "business"
-        ? ["mobile_number", "business_name", "owner_name", "owner_prefix"]
-        : ["mobile_number", "person_name", "person_prefix", "profession"];
+const validateForm = () => {
+  const requiredFields = [
+    "mobile_number",
+    "business_name",
+    "keywords",
+    "door_no",
+    "street_name",
+    "area",
+    "city",
+    "pincode",
+  ];
 
-    for (let field of requiredFields) {
-      if (!formData[field]) {
-        alert(`${field.replace(/_/g, " ")} is required.`);
-        return false;
-      }
-    }
-
-    const mobilePattern = /^[6-9]\d{9}$/;
-    if (!mobilePattern.test(formData.mobile_number)) {
-      alert("Invalid mobile number (must start with 6-9 and be 10 digits)");
+  for (let field of requiredFields) {
+    if (!formData[field] || (Array.isArray(formData[field]) && formData[field].length === 0)) {
+      alert(`${field.replace(/_/g, " ")} is required.`);
       return false;
     }
+  }
 
-    return true;
-  };
+  const mobilePattern = /^[6-9]\d{9}$/;
+  if (!mobilePattern.test(formData.mobile_number)) {
+    alert("Invalid mobile number (must start with 6-9 and be 10 digits)");
+    return false;
+  }
+
+  return true;
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
 
-    const { data, error } = await supabase.from("profiles").insert([formData]);
+    // Optional: get user ID if you're using Supabase Auth
+    const user_id = null; // or session?.user?.id;
+
+    const cleanedData = Object.fromEntries(
+      Object.entries({
+        ...formData,
+        user_id,
+      }).map(([key, value]) => [key, value === "" ? null : value])
+    );
+
+    // ✅ Check for existing mobile number
+    const { data: existingUser, error: checkError } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("mobile_number", cleanedData.mobile_number)
+      .single();
+
+    if (mobileExists) {
+      alert("Mobile number is already registered.");
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .insert([cleanedData]);
 
     if (error) {
-      console.error(error.message);
+      console.error("Supabase Error:", error);
       alert("Error submitting form");
     } else {
       alert("Form submitted successfully!");
-      setFormData(getInitialState(profileType)); // reset form
+      setFormData(getInitialState(profileType));
     }
   };
 
   if (!profileType) {
     return (
-      <div className="WholeSection  d-flex align-items-center justify-content-center"   >
-        <div
-          className="card p-4 shadow"
-          style={{  width: "90%" }}
-        >
+      <div className="WholeSection  d-flex align-items-center justify-content-center">
+        <div className="card p-4 shadow" style={{ width: "90%" }}>
           <h2 className="text-center fw-bold">Choose account type</h2>
           <p className="text-center">
             Already have an account? <a href="/login">Sign in</a>
@@ -619,6 +666,11 @@ const Signup = () => {
                 value={formData.mobile_number}
                 onChange={handleChange}
               />
+              {mobileExists && (
+                <small className="text-danger">
+                  Mobile number is already registered.
+                </small>
+              )}
             </div>
 
             {profileType === "business" ? (
@@ -646,14 +698,29 @@ const Signup = () => {
                 </div>
 
                 <div className="col-md-6 mb-3">
-                  <label>Owner Prefix *</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="owner_prefix"
-                    value={formData.owner_prefix}
-                    onChange={handleChange}
-                  />
+                  <label className="d-block mb-2">Owner Prefix *</label>
+                  <div className="form-check form-check-inline">
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="owner_prefix"
+                      value="Mr."
+                      checked={formData.owner_prefix === "Mr."}
+                      onChange={handleChange}
+                    />
+                    <label className="form-check-label">Mr.</label>
+                  </div>
+                  <div className="form-check form-check-inline">
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="owner_prefix"
+                      value="Ms."
+                      checked={formData.owner_prefix === "Ms."}
+                      onChange={handleChange}
+                    />
+                    <label className="form-check-label">Ms.</label>
+                  </div>
                 </div>
 
                 <div className="col-12 mb-3">

@@ -3,9 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Row, Col, Form, Button } from "react-bootstrap";
 import { FaSearch } from "react-icons/fa";
 import "../Css/LandingPage.css";
+import { useAuth } from "../context/AuthContext";
+
+import RecentlyListEnquiryModal from "../Components/RecentlyListEnquiryModal";
+
+import CategoryForLandingPage from "../Components/CategoryForLandingPage";
 
 //supabase
-import { supabase } from '../services/supabaseClient';
+import { supabase } from "../services/supabaseClient";
 
 //swiper..................
 // CSS imports
@@ -36,13 +41,27 @@ import WaterPumpImg from "../assets/images/WaterPump.webp";
 import TextilesImg from "../assets/images/Textiles.webp";
 import MobileOne from "../assets/Images/Mobile-about_app.png";
 import MobileTwo from "../assets/Images/Mobile-about_app2.png";
+import googlePlay from "../assets/Images/Google-Play-Emblema.png";
+import yourPhoneMockup from "../assets/Images/PhoneMockup.png"
 
 const LandingPage = () => {
-
   const [recentRecords, setRecentRecords] = useState([]);
   const [premiumRecords, setPremiumRecords] = useState([]);
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+
+  //checks for if the user is logged in
+  const { userData } = useAuth();
+
+  //for Recently Added list opening modal
+  const [showModal, setShowModal] = useState(false);
+
+  // Recently added list
+  const [selectedBusiness, setSelectedBusiness] = useState(null);
+  const handleEnquireClick = (business) => {
+    setSelectedBusiness(business);
+    setShowModal(true);
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -50,6 +69,7 @@ const LandingPage = () => {
       navigate(`/directory?query=${query}`);
     }
   };
+
   // aos+ Swiper....................
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
@@ -57,19 +77,18 @@ const LandingPage = () => {
 
   // fetch data from supabase
 
-   useEffect(() => {
+  useEffect(() => {
     const fetchRecentData = async () => {
-  const { data, error } = await supabase
-    .from('Directory_Data')
-    .select('*')
-    .order('user_id', { ascending: false }) // or 'created_at' if you add it
-    .limit(10);
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .order("user_id", { ascending: false })
+        .limit(10);
 
-  if (!error) {
-    setRecentRecords(data);
-  }
-};
-
+      if (!error) {
+        setRecentRecords(data);
+      }
+    };
 
     fetchRecentData();
   }, []);
@@ -240,30 +259,31 @@ const LandingPage = () => {
           >
             {productCategories.map((item, index) => (
               <SwiperSlide key={index}>
-  <div
-    className="text-center cursor-pointer"
-    onClick={() => navigate(`/directory?query=${item.title}`)}
-    style={{ cursor: "pointer" }}
-  >
-    <div
-      className="mb-2 mx-auto"
-      style={{
-        width: "100px",
-        height: "100px",
-        borderRadius: "50%",
-        overflow: "hidden",
-      }}
-    >
-      <img
-        src={item.img}
-        alt={item.title}
-        className="w-100 h-100 object-fit-cover"
-      />
-    </div>
-    <div className="fw-semibold text-dark small">{item.title}</div>
-  </div>
-</SwiperSlide>
-
+                <div
+                  className="text-center cursor-pointer"
+                  onClick={() => navigate(`/directory?query=${item.title}`)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <div
+                    className="mb-2 mx-auto"
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      borderRadius: "50%",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <img
+                      src={item.img}
+                      alt={item.title}
+                      className="w-100 h-100 object-fit-cover"
+                    />
+                  </div>
+                  <div className="fw-semibold text-dark small">
+                    {item.title}
+                  </div>
+                </div>
+              </SwiperSlide>
             ))}
           </Swiper>
         </div>
@@ -308,95 +328,6 @@ const LandingPage = () => {
         </Row>
       </div>
 
-      {/* Featured Stats Section */}
-
-      <div className="featured-stats-section text-dark position-relative py-5">
-        <div className="overlay-bg"></div>
-        <div className="container featured-Section ">
-          <Row className="align-items-center gy-4">
-            {/* Left Content */}
-            <Col lg={6} md={12}>
-              <h2 className="fw-bold mb-3">
-                Discover Our More than 15,000 Listings,
-              </h2>
-              <p className="mb-4 text-dark">
-                We connect you to the best suppliers in the industry. Our
-                directory makes discovering, comparing, and connecting seamless.
-              </p>
-
-              <ul className="list-unstyled mb-4">
-                <li className="mb-2">
-                  <span className="check-icon me-2">✔</span> Stay connected
-                </li>
-                <li className="mb-2">
-                  <span className="check-icon me-2">✔</span> Modern Listings
-                </li>
-                <li className="mb-2">
-                  <span className="check-icon me-2">✔</span> Verified Businesses
-                </li>
-                <li className="mb-2">
-                  <span className="check-icon me-2">✔</span> Well Organized
-                  Theme
-                </li>
-              </ul>
-
-              <Row>
-                <Col xs={6}>
-                  <h2 className="text-warning fw-bold">6k</h2>
-                  <p className="text-dark">Our Happy Clients</p>
-                </Col>
-                <Col xs={6}>
-                  <h2 className="text-warning fw-bold">10k</h2>
-                  <p className="text-dark">Total Verified Listings</p>
-                </Col>
-              </Row>
-              <Row>
-                <Col xs={6}>
-                  <h2 className="text-warning fw-bold">6k</h2>
-                  <p className="text-dark">Our Happy Clients</p>
-                </Col>
-                <Col xs={6}>
-                  <h2 className="text-warning fw-bold">10k</h2>
-                  <p className="text-dark">Total Verified Listings</p>
-                </Col>
-              </Row>
-            </Col>
-
-            {/* Right Image */}
-            <Col lg={6} md={12} className="position-relative text-center">
-              <div className="d-inline-block position-relative img-half-container">
-                <CircularText
-                  text="100%*Secured*Trust Worthy*"
-                  onHover="speedUp"
-                  spinDuration={20}
-                  className="rotated-circle"
-                />
-                <img
-                  src={MobileOne}
-                  className="floating-img img-fluid"
-                  alt="main"
-                />
-              </div>
-            </Col>
-          </Row>
-        </div>
-      </div>
-
-      {/* About Us Section */}
-      <div className="section-container">
-        <Row>
-          <Col>
-            <h3 className="text-center">About Us</h3>
-            <p className="text-center">
-              At Signpost PHONE BOOK, we are dedicated to connecting businesses
-              with their target audience. Our platform offers a comprehensive
-              database of MSMEs, making it easier for you to promote your
-              services and reach potential customers.
-            </p>
-          </Col>
-        </Row>
-      </div>
-
       {/* Recently Added Lists */}
       <div className="section-container mb-5">
         <h3 className="fw-bold mb-3">Recently Added Lists</h3>
@@ -413,16 +344,47 @@ const LandingPage = () => {
             992: { slidesPerView: 4 },
           }}
         >
-          {recentRecords.map((business, i) => (
-            <SwiperSlide key={i}>
-              <div className="business-card border rounded px-3 py-3 h-100">
-                <h6 className="fw-bold">{business.name}</h6>
-                <p className="text-muted mb-2">{business.location || 'Location not available'}</p>
-                <button className="btn btn-warning btn-sm">Enquire Now</button>
-              </div>
-            </SwiperSlide>
-          ))}
+          {recentRecords.map((business, i) => {
+            const displayName =
+              business.business_name?.trim() ||
+              business.person_name?.trim() ||
+              "No Name";
+
+            const mobileMasked =
+              business.mobile_number?.length === 10
+                ? `${business.mobile_number.slice(0, 5)}xxxxx`
+                : "N/A";
+
+            return (
+              <SwiperSlide key={i}>
+                <div className="business-card border rounded px-3 py-3 h-100">
+                  <h6 className="fw-bold">{displayName}</h6>
+                  <p className="text-muted mb-1">
+                    🛠️{" "}
+                    {Array.isArray(business.keywords) &&
+                    business.keywords.length > 0
+                      ? business.keywords.slice(0, 3).join(", ")
+                      : "No products"}
+                  </p>
+                  <p className="text-muted mb-2">📞 {mobileMasked}</p>
+                  <p className="text-muted mb-1">📍 {business.city || "N/A"}</p>
+
+                  <button
+                    className="btn btn-warning btn-sm"
+                    onClick={() => handleEnquireClick(business)}
+                  >
+                    Enquire Now
+                  </button>
+                </div>
+              </SwiperSlide>
+            );
+          })}
         </Swiper>
+        <RecentlyListEnquiryModal
+          show={showModal}
+          onClose={() => setShowModal(false)}
+          selectedBusiness={selectedBusiness}
+        />
       </div>
 
       {/* Recently Added Premium Lists */}
@@ -452,17 +414,19 @@ const LandingPage = () => {
                     src={business.image}
                     alt={business.name}
                     className="w-100 mb-2 rounded"
-                    style={{ height: 150, objectFit: 'cover' }}
+                    style={{ height: 150, objectFit: "cover" }}
                   />
                 )}
                 <h6 className="fw-bold">{business.name}</h6>
                 {business.rating && (
                   <p className="mb-1">
-                    <span className="text-warning">★ {business.rating}</span>{' '}
+                    <span className="text-warning">★ {business.rating}</span>{" "}
                     <small>({business.reviews} Reviews)</small>
                   </p>
                 )}
-                <p className="text-muted mb-2">{business.location || business.address}</p>
+                <p className="text-muted mb-2">
+                  {business.location || business.address}
+                </p>
                 <button className="btn btn-warning btn-sm">Enquire Now</button>
               </div>
             </SwiperSlide>
@@ -489,21 +453,37 @@ const LandingPage = () => {
         </Row>
       </div>
 
-      {/* Contact Us Section */}
-      <div className="section-container">
-        <Row>
-          <Col>
-            <h3 className="text-center">Contact Us</h3>
-            <p className="contact-detail text-center">
-              For inquiries, please reach out to us at:
-            </p>
-            <p className="contact-detail text-center">
-              Email: support@signpostphonebook.com
-            </p>
-            <p className="contact-detail text-center">Phone: 95145 55132</p>
-          </Col>
-        </Row>
+      {/* phonebook - app download from google play */}
+
+      <div className="container  phonebook-wrapper">
+      <div className="promo-box">
+        <h2>Phonebook</h2>
+        <p>
+          Download our application <br />
+          to find your business
+        </p>
+        <a
+          href="https://play.google.com/store"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img
+            src={googlePlay}
+            alt="Get it on Google Play"
+            className="playstore-logo"
+          />
+        </a>
       </div>
+
+      <div className="phone-mockup-container">
+        {/* Replace this div with an <img /> or SVG later */}
+        <img src={MobileOne} alt="Phone mockup" className="mockup" />
+
+      </div>
+    </div>
+
+      {/* categories for landingpage */}
+      <CategoryForLandingPage />
     </>
   );
 };
