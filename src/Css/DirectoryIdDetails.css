@@ -1,0 +1,65 @@
+.carousel-imagefordid {
+  height: 30vh;
+  position: relative;
+}
+
+.carousel-imagefordid img {
+  height: 30vh;
+  width: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Position pagination dots on top of image */
+.carousel-imagefordid .carousel-indicators {
+  bottom: 10px; /* slightly above bottom edge */
+  margin: 0;
+}
+
+/* Style the dots */
+.carousel-imagefordid .carousel-indicators [data-bs-target] {
+  background-color: rgba(255, 255, 255, 0.7);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.carousel-imagefordid .carousel-indicators .active {
+  background-color: #007bff; /* your theme color */
+  transform: scale(1.2);
+}
+
+
+
+@media (max-width: 576px) {
+  .carousel-imagefordid {
+    height: 25vh; /* smaller height for small screens */
+  }
+
+  .carousel-imagefordid img {
+    height: 25vh;
+  }
+
+  /* Larger dots for touch screens */
+  .carousel-imagefordid .carousel-indicators [data-bs-target] {
+    width: 12px;
+    height: 12px;
+    background-color: rgb(0, 64, 255);
+  }
+
+  /* Move dots slightly up & center them */
+  .carousel-imagefordid .carousel-indicators {
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    justify-content: center !important;
+  }
+}
+
+
+
+/* Make lightbox background semi-transparent black */
+.yarl__container {
+  background-color: rgba(0, 0, 0, 0.5) !important; /* semi-transparent */
+}

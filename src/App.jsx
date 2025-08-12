@@ -85,51 +85,70 @@
 // export default App;
 
 
-import React from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
-import Navbar from "./Components/Navbar";
-import FooterPage from "./Components/FooterPage";
-import LandingPage from "./Pages/LandingPage";
-import Login from "./pages/Auth/Login";
-import Signup from "./pages/Auth/Signup";
-import DirectoryPage from "./pages/DirectoryPage";
-import "bootstrap/dist/css/bootstrap.min.css";
-import PostYourListing from "./Pages/PostYourListing";
-import AboutPage from "./Pages/AboutPage";
-import Timeline from "./Components/Timeline";
-import ProfilePage from "./Pages/ProfilePage";
-import RecentlyListEnquiryModal from "./Components/RecentlyListEnquiryModal";
-import CategoryForLandingPage from "./Components/CategoryForLandingPage";
+  import React from "react";
+  import { useLocation } from "react-router-dom";
 
-const App = () => {
-  const location = useLocation();
+  import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+  import Navbar from "./Components/Navbar";
+  import FooterPage from "./Components/FooterPage";
+  import LandingPage from "./Pages/LandingPage";
+  import Login from "./pages/Auth/Login";
+  import Signup from "./Pages/Auth/Signup";
+  import DirectoryPage from "./Pages/DirectoryPage";
+  import "bootstrap/dist/css/bootstrap.min.css";
+  import PostYourListing from "./Pages/PostYourListing";
+  import AboutPage from "./Pages/AboutPage";
+  import Timeline from "./Components/Timeline";
+  import ProfilePage from "./Pages/ProfilePage";
+  import RecentlyListEnquiryModal from "./Components/RecentlyListEnquiryModal";
+  import CategoryForLandingPage from "./Components/CategoryForLandingPage";
+  import ContactPage from "../src/Pages/ContactPage";
+  import AddPeople from "../src/Pages/AddPeople";
+  import Dashboard from "./Components/Dashboard";
+  import EditProfile from "./Components/EditProfile";
+  import DirectoryIdDetails from "./Pages/DirectoryIdDetails";
+  import PopularSearches from "./Components/PopularSearches";
 
- 
-  const hideFooterPaths = ["/directory"];
+  import FeatureLists from "./Components/FeatureLists";
+  import LandingPageDataBase from "./Components/LandingPageDataBase";
 
-  const shouldShowFooter = !hideFooterPaths.includes(location.pathname);
+  const App = () => {
+    const location = useLocation();
 
-  return (
-    <>
-      <Navbar />
-      <div style={{ paddingTop: "80px" }}>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/LandingPage" element={<LandingPage />} />
-          <Route path="/directory" element={<DirectoryPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/PostYourListing" element={<PostYourListing />} />
-          <Route path="/AboutPage" element={<AboutPage />} />
-          <Route path="/Timeline" element={<Timeline />} />
-          <Route path="/ProfilePage" element={<ProfilePage />} />
-          <Route path="/RecentlyListEnquiryModal" element={<RecentlyListEnquiryModal />} />
-          <Route path="/CategoryForLandingPage" element={<CategoryForLandingPage />} />
-        </Routes>
-      </div>
-      {shouldShowFooter && <FooterPage />}
-    </>
-  );
-};
+  
+    const hideFooterPaths = ["/directorypage"];
 
-export default App;
+    const shouldShowFooter = !hideFooterPaths.includes(location.pathname);
+
+    return (
+      <>
+        <Navbar />
+        <div style={{ paddingTop: "80px" }}>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/LandingPage" element={<LandingPage />} />
+            <Route path="/directoryPage" element={<DirectoryPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/PostYourListing" element={<PostYourListing />} />
+            <Route path="/AboutPage" element={<AboutPage />} />
+            <Route path="/Timeline" element={<Timeline />} />
+            <Route path="/ProfilePage" element={<ProfilePage />} />
+            <Route path="/RecentlyListEnquiryModal" element={<RecentlyListEnquiryModal />} />
+            <Route path="/CategoryForLandingPage" element={<CategoryForLandingPage />} />
+            <Route path="/ContactPage" element={<ContactPage />} />
+            <Route path="/AddPeople" element={<AddPeople />} />
+            <Route path="/Dashboard" element={<Dashboard />} />
+            <Route path="/EditProfile" element={<EditProfile />} />
+            <Route path="/profile/:id" element={<DirectoryIdDetails />} />  
+            {/* <Route path="/PopularSearches" element={<PopularSearches />} />   */}
+            <Route path="/FeatureLists" element={<FeatureLists />} />  
+            <Route path="/LandingPageDataBase" element={<LandingPageDataBase />} />  
+          </Routes>
+        </div>
+        {shouldShowFooter && <FooterPage />}
+      </>
+    );
+  };
+
+  export default App;

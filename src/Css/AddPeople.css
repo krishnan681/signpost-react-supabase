@@ -1,0 +1,26 @@
+.signup-container {
+  min-height: 0vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f4f4f4;
+  padding: 2rem;
+}
+
+.form-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 900px;
+}
+
+.WholeSection{
+  height: 101vh;
+
+  @media (max-width: 768px) {
+  
+    height: 120vh;
+}
+}

@@ -1,0 +1,86 @@
+/* Contactus.css */
+
+/* Hero Section */
+.hero-section {
+  /* background: linear-gradient(135deg, #007bff, #6610f2); */
+  color: white;
+}
+
+.hero-section h1,
+.hero-section p {
+  margin: 0;
+}
+
+/* Contact Form */
+form h5 {
+  font-weight: bold;
+  color: #333;
+}
+
+form .form-control {
+  border-radius: 8px;
+  box-shadow: none;
+  border: 1px solid #ced4da;
+  transition: border-color 0.2s ease-in-out;
+}
+
+form .form-control:focus {
+  border-color: #007bff;
+  box-shadow: none;
+}
+
+form .btn {
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+/* Contact Info Section */
+.bg-light {
+  background-color: #f8f9fa !important;
+}
+
+.bg-light h4 {
+  font-weight: bold;
+  color: #333;
+}
+
+.bg-light a {
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.bg-light a:hover {
+  color: #007bff;
+}
+
+/* Icons */
+svg {
+  display: block;
+  margin: 0 auto 8px;
+}
+
+/* CTA Section */
+.cta-section {
+  background: linear-gradient(135deg, #20c997, #0dcaf0);
+}
+
+.cta-section h4 {
+  font-weight: 600;
+}
+
+.cta-section button {
+  font-weight: 500;
+  border-radius: 20px;
+}
+ 
+/* Responsive */
+@media (max-width: 768px) {
+  .container.d-flex {
+    flex-direction: column !important;
+    text-align: center;
+  }
+
+  .contact-page img {
+    margin-bottom: 1.5rem;
+  }
+}

@@ -1,3 +1,4 @@
+ 
 .timeline-container {
   background: #fff;
 }
@@ -6,28 +7,49 @@
   position: relative;
 }
 
-.timeline-horizontal {
+
+.mySwiper {
+  width: 100%;
+  height: auto;
+  padding-bottom: 50px;  
+}
+
+.timeline-horizontal-swiper-container {
   position: relative;
-  border-top: 2px dashed #ccc;
-  padding-top: 40px;
+  padding-top: 40px;  
+}
+
+.horizontal-timeline-swiper .swiper-wrapper {
+  position: relative;
+  align-items: flex-start;
+}
+
+.horizontal-timeline-swiper .swiper-slide {
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 .timeline-item {
   position: relative;
-  flex: 1;
+  text-align: center;
+  padding-top: 30px;  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.timeline-dot {
+.timeline-item .timeline-dot {
   width: 20px;
   height: 20px;
   background-color: #ec6b2c;
   border-radius: 50%;
-  margin: 0 auto;
   position: absolute;
-  top: -10px;
+  top: 0vh;  
   left: 50%;
   transform: translateX(-50%);
-  z-index: 1;
+  /* z-index: 2000; */
 }
 
 .timeline-year {
@@ -36,6 +58,8 @@
   font-weight: bold;
   font-size: 1.25rem;
   margin-top: 20px;
+  position: relative;
+  z-index: 3;
 }
 
 .timeline-text {
@@ -51,29 +75,157 @@
   height: auto;
 }
 
-/* Mobile Vertical Timeline */
-.timeline-vertical {
+.timeline-horizontal-swiper-container::before {
+  content: "";
+  position: absolute;
+  top: 50px;  
+  left: 0;
+  right: 0;
+  border-top: 2px dashed #ec6b2c;
+  /* z-index: 1; */
+}
+
+.horizontal-timeline-swiper .swiper-pagination-bullets {
+  bottom: 0px !important;
+  text-align: center;
+}
+
+.horizontal-timeline-swiper .swiper-pagination-bullet {
+  background: #ccc;
+  opacity: 1;
+}
+
+.horizontal-timeline-swiper .swiper-pagination-bullet-active {
+  background: #ec6b2c;
+}
+
+.horizontal-timeline-swiper .swiper-button-next,
+.horizontal-timeline-swiper .swiper-button-prev {
+  color: #ec6b2c !important;
+  top: 50% !important;
+  transform: translateY(-50%);
+}
+
+.timeline-vertical-swiper-container {
   position: relative;
-  border-left: 2px dashed #ccc;
-  margin-left: 20px;
+  height: 400px; 
+  overflow: hidden;  
+}
+
+.vertical-timeline-swiper {
+  height: 100%;  
+}
+
+.vertical-timeline-swiper .swiper-wrapper {
+  flex-direction: column; 
+}
+
+.vertical-timeline-swiper .swiper-slide {
+  height: auto !important;  
+  display: flex !important;  
+  align-items: flex-start;
+  padding-left: 40px;  
+  padding-top: 10px;  
+  padding-bottom: 10px;
 }
 
 .timeline-item-vertical {
   position: relative;
-  padding-left: 30px;
-  margin-bottom: 40px;
+  display: flex;
+  align-items: flex-start;
+  width: 100%;  
 }
 
 .timeline-item-vertical .timeline-dot {
+  width: 16px;
+  height: 16px;
+  background-color: #ec6b2c;
+  border-radius: 50%;
   position: absolute;
-  left: -11px;
-  top: 4px;
+ 
+  left: -16px; 
+  top: 4px;  
+  z-index: 2;  
 }
 
 .timeline-content {
-  margin-left: 10px;
+  margin-left: 10px;  
 }
 
-.timeline-year {
+.timeline-item-vertical .timeline-year {
   font-weight: bold;
+  margin-top: 0;
+}
+
+ 
+.timeline-vertical-swiper-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+   
+  left: 32px;  
+  bottom: 0;
+  border-left: 2px dashed #ec6b2c;
+  z-index: 0;  
+}
+
+.vertical-timeline-swiper .swiper-pagination-bullets {
+  position: absolute;
+ 
+  left: 32px !important;  
+  transform: translateX(-50%); 
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  list-style: none;
+   
+}
+
+.vertical-timeline-swiper .swiper-pagination-bullet {
+  margin: 5px 0;
+  background: #ccc;
+  opacity: 1;
+  position: relative;
+  left: 360px;
+}
+
+.vertical-timeline-swiper .swiper-pagination-bullet-active {
+  background: #ec6b2c;
+}
+
+ 
+.vertical-timeline-swiper .swiper-button-next,
+.vertical-timeline-swiper .swiper-button-prev {
+  color: #ec6b2c !important;
+  left: 50% !important;
+  transform: translateX(-50%);
+  z-index: 10;  
+}
+
+.vertical-timeline-swiper .swiper-button-prev {
+  top: 0px !important;
+}
+
+.vertical-timeline-swiper .swiper-button-next {
+  bottom: 0px !important;
+  top: auto !important;
+}
+
+ 
+.timeline-horizontal,
+.timeline-vertical {
+  display: none !important;
+}
+
+
+.swiper-grab-cursor {
+  cursor: grab !important;
+}
+
+.swiper-slide:active {
+  cursor: grabbing !important;
 }

@@ -174,3 +174,180 @@ export default RecentlyListEnquiryModal;
 
 
 and 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.advertisements (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  image_url text NOT NULL,
+  offer_details text,
+  timeline_start timestamp with time zone,
+  timeline_end timestamp with time zone,
+  is_active boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT advertisements_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.carousel_items (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  subtitle text,
+  image_url text NOT NULL,
+  is_active boolean DEFAULT true,
+  sort_order integer DEFAULT 0,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT carousel_items_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.enquiries (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  sender_id uuid NOT NULL,
+  sender_name text,
+  sender_mobile text,
+  receiver_id uuid NOT NULL,
+  receiver_name text,
+  receiver_mobile text,
+  message text,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT enquiries_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.favorites (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  profile_id uuid,
+  favorited_profile_id uuid,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT favorites_pkey PRIMARY KEY (id),
+  CONSTRAINT favorites_profile_id_fkey FOREIGN KEY (profile_id) REFERENCES public.profiles(id),
+  CONSTRAINT favorites_favorited_profile_id_fkey FOREIGN KEY (favorited_profile_id) REFERENCES public.profiles(id)
+);
+CREATE TABLE public.post_interactions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  post_id uuid,
+  profile_id uuid,
+  interaction_type text NOT NULL CHECK (interaction_type = ANY (ARRAY['like'::text, 'comment'::text, 'share'::text, 'save'::text])),
+  comment_text text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT post_interactions_pkey PRIMARY KEY (id),
+  CONSTRAINT post_interactions_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id),
+  CONSTRAINT post_interactions_profile_id_fkey FOREIGN KEY (profile_id) REFERENCES public.profiles(id)
+);
+CREATE TABLE public.posts (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  profile_id uuid,
+  title text NOT NULL,
+  description text,
+  dimensions text,
+  images text,
+  is_active boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT posts_pkey PRIMARY KEY (id),
+  CONSTRAINT posts_profile_id_fkey FOREIGN KEY (profile_id) REFERENCES public.profiles(id)
+);
+
+
+
+CREATE TABLE public.profiles (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid,
+  profile_type text NOT NULL CHECK (profile_type = ANY (ARRAY['person'::text, 'business'::text])),
+  mobile_number text NOT NULL UNIQUE,
+  person_name text,
+  person_prefix text,
+  profession text,
+  business_name text,
+  owner_name text,
+  owner_prefix text,
+  keywords ARRAY,
+  description text,
+  landline_code text,
+  landline_number text,
+  door_no text,
+  street_name text,
+  area text,
+  city text,
+  pincode text,
+  email text,
+  promo_code text,
+  profile_image text,
+  is_premium boolean DEFAULT false,
+  is_guest boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  business_prefix text NOT NULL DEFAULT 'M/s.'::text,
+  password text NOT NULL DEFAULT 'signpost'::text,
+  confirmPassword text NOT NULL DEFAULT 'signpost'::text,
+  is_admin boolean NOT NULL DEFAULT false,
+  CONSTRAINT profiles_pkey PRIMARY KEY (id),
+  CONSTRAINT profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
