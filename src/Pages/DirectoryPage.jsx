@@ -281,343 +281,388 @@
 
 // export default DirectoryPage;
 
-
-
-
 import { useEffect, useState } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import Swal from "sweetalert2";
+import debounce from "lodash.debounce"; // npm i lodash.debounce
 import RecentlyListEnquiryModal from "../Components/RecentlyListEnquiryModal";
 import "../Css/DirectoryPage.css";
-
+ 
 const itemsPerPage = 5;
 
 const DirectoryPage = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { userData } = useAuth();
+    const location = useLocation();
+    const navigate = useNavigate();
+    const { userData } = useAuth();
 
-  const queryParams = new URLSearchParams(location.search);
-  const query = queryParams.get("query")?.toLowerCase() || "";
-  const showAll = queryParams.get("showAll") === "true";
+    const [allRecords, setAllRecords] = useState([]);
+    const [filteredCategory, setFilteredCategory] = useState("All");
+    const [currentPage, setCurrentPage] = useState(1);
 
-  const [allRecords, setAllRecords] = useState([]);
-  const [filteredCategory, setFilteredCategory] = useState("All");
-  const [currentPage, setCurrentPage] = useState(1);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedProfile, setSelectedProfile] = useState(null);  
 
-  const [showModal, setShowModal] = useState(false);
-  const [selectedProfile, setSelectedProfile] = useState(null);
+    const queryParams = new URLSearchParams(location.search);
+    const businessNameQuery =
+        queryParams.get("business_name")?.toLowerCase() || "";
+    const keywordsQuery = queryParams.get("keywords")?.toLowerCase() || "";
+    const showAll = queryParams.get("showAll") === "true";
 
-  const categories = ["All", "Machinery", "Electrical", "Hardware", "Automation", "Chemicals"];
+    const [searchBusinessName, setSearchBusinessName] =
+        useState(businessNameQuery);
+    const [searchKeywords, setSearchKeywords] = useState(keywordsQuery);
 
-  const fetchDirectoryData = async () => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("user_id", { ascending: false });
+    const categories = [
+        "All",
+        "Machinery",
+        "Electrical",
+        "Hardware",
+        "Automation",
+        "Chemicals",
+    ]; // Fetch data from Supabase
 
-    if (!error) setAllRecords(data);
-  };
+    const fetchDirectoryData = async () => {
+        const { data, error } = await supabase
+            .from("profiles")
+            .select("*")
+            .order("user_id", { ascending: false });
 
-  useEffect(() => {
-    fetchDirectoryData();
-  }, []);
-
-  useEffect(() => {
-    if (!showAll && query) {
-      const match = categories.find((cat) =>
-        query.toLowerCase().includes(cat.toLowerCase())
-      );
-      if (match) setFilteredCategory(match);
-    }
-  }, [query, showAll]);
-
-  const highlightMatch = (text) => {
-    if (!text) return "";
-    if (!query) return text;
-    const parts = text.split(new RegExp(`(${query})`, "gi"));
-    return parts.map((part, index) =>
-      part.toLowerCase() === query.toLowerCase() ? (
-        <mark key={index}>{part}</mark>
-      ) : (
-        part
-      )
-    );
-  };
-
-  // ✅ Updated logic
-  let matchedRecords = [];
-  let recommendedRecords = [];
-
-  if (showAll) {
-    // Full database mode
-    matchedRecords = allRecords;
-    recommendedRecords = [];
-  } else if (query) {
-    // Search mode
-    matchedRecords = allRecords.filter((item) => {
-      const searchValue = query.toLowerCase();
-      return (
-        item.business_name?.toLowerCase().includes(searchValue) ||
-        item.person_name?.toLowerCase().includes(searchValue) ||
-        `${item.prefix || ""} ${item.person_name || ""}`
-          .toLowerCase()
-          .includes(searchValue) ||
-        item.product?.toLowerCase().includes(searchValue)
-      );
-    });
-
-    recommendedRecords = allRecords.filter(
-      (item) => !matchedRecords.includes(item)
-    );
-  } else {
-    // Default recommended mode
-    recommendedRecords = allRecords;
-  }
-
-  const categoryFiltered = (list) =>
-    list.filter((item) =>
-      filteredCategory === "All"
-        ? true
-        : item.product?.toLowerCase().includes(filteredCategory.toLowerCase())
-    );
-
-  const paginated = (list) => {
-    const filtered = categoryFiltered(list);
-    const totalPages = Math.ceil(filtered.length / itemsPerPage);
-    return {
-      data: filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
-      totalPages,
+        if (!error) setAllRecords(data);
     };
-  };
 
-  const handleCardClick = (e) => {
-    if (!userData) {
-      e.preventDefault();
-      Swal.fire({
-        icon: "info",
-        title: "Login Required",
-        text: "Please log in to view profiles.",
-      }).then(() => navigate("/login"));
-    }
-  };
+    useEffect(() => {
+        fetchDirectoryData();
+    }, []);  
 
-  const handleCall = (phone) => {
-    if (!phone) {
-      Swal.fire("No Phone Number", "This user has not provided a contact number.", "info");
-      return;
-    }
-    window.location.href = `tel:${phone}`;
-  };
+  
+    let matchedRecords = [];
+    let recommendedRecords = [];  
 
-  const openEnquiryModal = (profile) => {
-    if (!userData) {
-      Swal.fire("Login Required", "Please log in to send an enquiry.", "info");
-      return;
-    }
-    setSelectedProfile(profile);
-    setShowModal(true);
-  };
+    const currentBusinessNameQuery = searchBusinessName.toLowerCase();
+    const currentKeywordsQuery = searchKeywords.toLowerCase();
 
-  const renderCard = (item) => (
-    <Link
-      to={`/profile/${item.user_id}`}
-      key={item.user_id}
-      className="text-decoration-none text-dark"
-      onClick={handleCardClick}
-    >
-      <div
-        className={`mb-4 shadow-sm directory-card ${
-          item.is_premium ? "bg-light-pink" : "non-premium-card"
-        }`}
-      >
-        <div className="card-premium">
-          <img
-            src={item.profile_image || "/placeholder-logo.png"}
-            alt={item.business_name}
-          />
-          <div className="card-info">
-            <h5>
-              {highlightMatch(
-                item.business_name || `${item.prefix || ""} ${item.person_name || ""}`
-              )}
-            </h5>
-            <p>
-              <strong>Location:</strong> {item.city || "N/A"}
-            </p>
-            <p>
-              <strong>Description:</strong>{" "}
-              {item.description || "No description available"}
-            </p>
+    if (showAll) {
+        matchedRecords = allRecords;
+        recommendedRecords = [];
+    } else if (currentBusinessNameQuery || currentKeywordsQuery) {
+        const searchTerm = (
+            currentBusinessNameQuery +
+            " " +
+            currentKeywordsQuery
+        ).trim();
 
-            <p className="card-text text-muted small mb-0">
-              {item.profile_type === "business" ? (
-                <>
-                  <strong>Products:</strong>{" "}
-                  {Array.isArray(item.keywords)
-                    ? item.keywords.join(", ")
-                    : item.keywords || "No products listed"}
-                </>
-              ) : (
-                <>
-                  <strong>Profession:</strong>{" "}
-                  {item.profession || "Not specified"}
-                </>
-              )}
-            </p>
-          </div>
-          <div className="card-buttons">
-            <button className="btn btn-danger">View Full Profile</button>
-            <button
-              className="btn btn-warning"
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                openEnquiryModal(item);
-              }}
-            >
-              Enquire
-            </button>
-            <button
-              className="btn btn-success"
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                handleCall(item.mobile_number);
-              }}
-            >
-              Call
-            </button>
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
+        matchedRecords = allRecords.filter((item) => {
+            const searchableFields = [
+                item.business_name,
+                item.person_name,
+                item.profession,
+                item.description,
+                item.owner_name,
+                item.keywords
+                    ? Array.isArray(item.keywords)
+                        ? item.keywords.join(", ")
+                        : item.keywords
+                    : "",
+            ];  
 
-  // Pagination for current list
-  const showList = showAll
-    ? matchedRecords
-    : query
-    ? recommendedRecords
-    : recommendedRecords;
+            return searchTerm
+                .toLowerCase()
+                .split(/\s+/)
+                .every((term) =>
+                    searchableFields.some(
+                        (field) => field && field.toLowerCase().includes(term)
+                    )
+                );
+        });
 
-  const { data: paginatedData, totalPages } = paginated(showList);
+        recommendedRecords = allRecords.filter(
+            (item) => !matchedRecords.includes(item)
+        );
+    } else {
+        // No search input, show recommended allRecords
+        recommendedRecords = allRecords;
+    } // Determine list to show before pagination
 
-  return (
-    <div className="directory-container">
-      {/* Sidebar */}
-      <div className="directory-sidebar">
-        <h4>Filters</h4>
-        <div className="form-group mt-3">
-          <label htmlFor="categorySelect">Category</label>
-          <select
-            id="categorySelect"
-            className="form-control"
-            value={filteredCategory}
-            onChange={(e) => {
-              setFilteredCategory(e.target.value);
-              setCurrentPage(1);
-            }}
-          >
-            {categories.map((cat, i) => (
-              <option key={i} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+    const showList = showAll
+        ? matchedRecords
+        : matchedRecords.length > 0
+            ? matchedRecords
+            : recommendedRecords;
 
-      {/* Content */}
-      <div className="directory-content">
-        {showAll && (
-          <>
-            <h5 className="mb-3">All Profiles</h5>
-            {categoryFiltered(matchedRecords).map(renderCard)}
-          </>
-        )}
+    const categoryFiltered = (list) =>
+        list.filter((item) =>
+            filteredCategory === "All"
+                ? true
+                : (item.product || "")
+                    .toLowerCase()
+                    .includes(filteredCategory.toLowerCase())
+        );
 
-        {!showAll && query && (
-          <>
-            <h5 className="mb-3">
-              Search Results for "<strong>{query}</strong>"
-            </h5>
-            {categoryFiltered(matchedRecords).length > 0 ? (
-              categoryFiltered(matchedRecords).map(renderCard)
+    const paginated = (list) => {
+        const filtered = categoryFiltered(list);
+        const totalPages = Math.ceil(filtered.length / itemsPerPage);
+        return {
+            data: filtered.slice(
+                (currentPage - 1) * itemsPerPage,
+                currentPage * itemsPerPage
+            ),
+            totalPages,
+        };
+    };
+
+    const { data: paginatedData, totalPages } = paginated(showList); // Highlight matching parts in text for search inputs
+
+    const highlightMatch = (text) => {
+        if (!text) return "";
+
+        let combinedQuery = (searchBusinessName + " " + searchKeywords).trim();
+
+        if (!combinedQuery) return text; // Escape regex special chars in combinedQuery
+
+        const escapedQuery = combinedQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // Split by space for multiple terms
+        const terms = escapedQuery.split(/\s+/); // Build regex matching any of the terms (case-insensitive)
+
+        const regex = new RegExp(`(${terms.join("|")})`, "gi");
+
+        const parts = text.split(regex);
+
+        return parts.map((part, index) =>
+            terms.some((term) => term.toLowerCase() === part.toLowerCase()) ? (
+                <mark key={index}>{part}</mark>
             ) : (
-              <div className="p-4">
-                <p>No results found for "<strong>{query}</strong>"</p>
-              </div>
-            )}
+                part
+            )
+        );
+    };
 
-            {recommendedRecords.length > 0 && (
-              <>
-                <h5 className="mt-5 mb-3">Recommended</h5>
-                {paginatedData.map(renderCard)}
-              </>
-            )}
-          </>
-        )}
+    const handleCardClick = (e) => {
+        if (!userData) {
+            e.preventDefault();
+            Swal.fire({
+                icon: "info",
+                title: "Login Required",
+                text: "Please log in to view profiles.",
+            }).then(() => navigate("/login"));
+        }
+    };
 
-        {!showAll && !query && (
-          <>
-            <h5 className="mb-3">Recommended</h5>
-            {paginatedData.map(renderCard)}
-          </>
-        )}
+    const handleCall = (phone) => {
+        if (!phone) {
+            Swal.fire(
+                "No Phone Number",
+                "This user has not provided a contact number.",
+                "info"
+            );
+            return;
+        }
+        window.location.href = `tel:${phone}`;
+    };
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="pagination-controls">
-            <button
-              className="btn btn-sm btn-outline-secondary"
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              disabled={currentPage === 1}
+    const openEnquiryModal = (profile) => {
+        if (!userData) {
+            Swal.fire("Login Required", "Please log in to send an enquiry.", "info");
+            return;
+        }
+        setSelectedProfile(profile);
+        setShowModal(true);
+    };
+
+    const renderCard = (item, index) => (
+        <Link
+            to={`/profile/${item.user_id || item.id || index}`}
+            key={item.user_id || item.id || index}
+            className="text-decoration-none text-dark"
+            onClick={handleCardClick}
+        >
+
+            <div
+                className={`mb-4 shadow-sm directory-card ${item.is_premium ? "bg-light-pink" : "non-premium-card"
+                    }`}
             >
-              Prev
-            </button>
-            <span>
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              className="btn btn-sm btn-outline-secondary"
-              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </button>
-          </div>
-        )}
-      </div>
 
-      {/* Enquiry Modal */}
-      <RecentlyListEnquiryModal
-        show={showModal}
-        onClose={() => setShowModal(false)}
-        selectedBusiness={selectedProfile}
-      />
-    </div>
-  );
+                <div className="card-premium">
+
+                    <img
+                        src={item.profile_image || "/placeholder-logo.png"}
+                        alt={item.business_name || item.person_name}
+                    />
+
+                    <div className="card-info">
+
+                        <h5>
+
+                            {highlightMatch(
+                                item.business_name ||
+                                `${item.prefix || ""} ${item.person_name || ""}`
+                            )}
+
+                        </h5>
+
+                        <p>
+                            <strong>Location:</strong> {item.city || "N/A"}
+
+                        </p>
+
+                        <p>
+                            <strong>Description:</strong>
+                            {item.description || "No description available"}
+                        </p>
+
+                        <p className="card-text text-muted small mb-0">
+
+                            {item.profile_type === "business" ? (
+                                <>
+                                    <strong>Products:</strong>
+                                    {Array.isArray(item.keywords)
+                                        ? item.keywords.join(", ")
+                                        : item.keywords || "No products listed"}
+
+                                </>
+                            ) : (
+                                <>
+                                    <strong>Profession:</strong>
+                                    {item.profession || "Not specified"}               
+                                </>
+                            )}
+
+                        </p>
+
+                    </div>
+
+                    <div className="card-buttons">
+
+                        <button className="btn btn-danger">View Full Profile</button>
+
+                        <button
+                            className="btn btn-warning"
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                openEnquiryModal(item);
+                            }}
+                        >
+                            Enquire            
+                        </button>
+
+                        <button
+                            className="btn btn-success"
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleCall(item.mobile_number);
+                            }}
+                        >
+                            Call             
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </Link>
+    );
+
+    return (
+        <div className="directory-container">
+            {/* Sidebar */}     
+            <div className="directory-sidebar">
+                <h4>Filters</h4>       
+                <div className="form-group mt-3">
+                    <label htmlFor="categorySelect">Category</label>        
+                    <select
+                        id="categorySelect"
+                        className="form-control"
+                        value={filteredCategory}
+                        onChange={(e) => {
+                            setFilteredCategory(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                    >
+
+                        {categories.map((cat, i) => (
+                            <option key={i} value={cat}>
+                                {cat}              
+                            </option>
+                        ))}
+
+                    </select>
+
+                </div>
+
+            </div>
+            {/* Content */}     
+            <div className="directory-content">
+                {/* Search Box Container */}
+                <div className="seaerch-boxxes mb-4 d-flex flex-column flex-md-row gap-2">
+                    <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Search Business Name"
+                        value={searchBusinessName}
+                        onChange={(e) => setSearchBusinessName(e.target.value)}
+                        style={{ minWidth: "200px" }}
+                    />
+                    <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Search Keywords"
+                        value={searchKeywords}
+                        onChange={(e) => setSearchKeywords(e.target.value)}
+                        style={{ minWidth: "200px" }}
+                    />
+                </div>
+                {/* Results */}        
+                {showList.length > 0 ? (
+                    paginatedData.map((item, index) => renderCard(item, index))
+                ) : (
+                    <div className="p-4">
+                        <p>No results found for your search.</p>         
+                    </div>
+                )}
+                {/* Pagination */}        
+                {totalPages > 1 && (
+                    <div className="pagination-controls">
+
+                        <button
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                            disabled={currentPage === 1}
+                        >
+                            Prev            
+                        </button>
+
+                        <span>
+                            Page {currentPage} of {totalPages}           
+                        </span>
+
+                        <button
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                        >
+                            Next             
+                        </button>
+
+                    </div>
+                )}
+
+            </div>
+            {/* Enquiry Modal */}     
+            <RecentlyListEnquiryModal
+                show={showModal}
+                onClose={() => setShowModal(false)}
+                selectedBusiness={selectedProfile}
+            />
+
+        </div>
+    );
 };
 
 export default DirectoryPage;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import { useEffect, useState } from "react";
 // import { useLocation, Link } from "react-router-dom";

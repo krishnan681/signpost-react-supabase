@@ -95,8 +95,6 @@ const LandingPage = () => {
     };
 
     fetchRecentData();
-
-    
   }, []);
 
   useEffect(() => {
@@ -114,8 +112,6 @@ const LandingPage = () => {
     };
 
     fetchPremiumData();
-
-    
   }, []);
 
   const productCategories = [
@@ -216,12 +212,7 @@ const LandingPage = () => {
           </span>
           <div className="rotating-box px-3 py-1 rounded">
             <RotatingText
-              texts={[
-                "Industrial Machinery",
-                "MSME Services",
-                "Electrical Panels",
-                "CNC Lathe Experts",
-              ]}
+              texts={["Drilling", "MSME Services", "Pumps", "CNC Machines"]}
               mainClassName="text-white fw-bold"
               staggerFrom="last"
               initial={{ y: "100%", opacity: 0 }}
@@ -240,21 +231,23 @@ const LandingPage = () => {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => navigate(`/directoryPage`)}
             placeholder="Search Business Name or products"
             className="Searchbox rounded-0 flex-grow-1"
           />
+
           <Button type="submit" variant="warning" className="rounded-0">
             <FaSearch />
           </Button>
         </Form>
 
         {/* View All Button */}
-        <Button
+        {/* <Button
           className="view-all-btn mt-3 fw-bold px-4 py-2"
           onClick={() => navigate("/directoryPage")}
         >
           View All
-        </Button>
+        </Button> */}
       </div>
 
       {/* Industrial Products Carousel Style Section */}

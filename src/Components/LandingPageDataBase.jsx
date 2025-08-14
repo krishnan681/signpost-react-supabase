@@ -236,7 +236,7 @@ const LandingPageDataBase = () => {
       });
       return;
     }
-    navigate("/DirectoryPage?showAll=true");
+    navigate("/DirectoryPage ");
   };
 
   // ✅ Runs when Search button is clicked
@@ -289,15 +289,20 @@ const LandingPageDataBase = () => {
               type="text"
               placeholder="Search by business name..."
               value={searchName}
+              onFocus={() => navigate(`/directoryPage`)}
               onChange={(e) => setSearchName(e.target.value)}
             />
             <input
               type="text"
               placeholder="Search by profession or keywords..."
               value={professionSearch}
+            onFocus={() => navigate(`/directoryPage`)}
+
               onChange={(e) => setProfessionSearch(e.target.value)}
             />
-            <button className="msme-search-btn" onClick={handleSearchClick}>
+            <button className="msme-search-btn"
+            onFocus={() => navigate(`/directoryPage`)}
+              >
               <FaSearch /> Search
             </button>
           </div>

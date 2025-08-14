@@ -1,5 +1,3 @@
-"use client";
-
 import {
   forwardRef,
   useCallback,
@@ -10,7 +8,7 @@ import {
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-import '../Css/RotatingText.css'
+import "../Css/RotatingText.css";
 
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -167,7 +165,10 @@ const RotatingText = forwardRef((props, ref) => {
       transition={transition}
     >
       <span className="text-rotate-sr-only">{texts[currentTextIndex]}</span>
-      <AnimatePresence mode={animatePresenceMode} initial={animatePresenceInitial}>
+      <AnimatePresence
+        mode={animatePresenceMode}
+        initial={animatePresenceInitial}
+      >
         <motion.span
           key={currentTextIndex}
           className={cn(

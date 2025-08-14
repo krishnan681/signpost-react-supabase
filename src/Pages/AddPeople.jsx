@@ -518,7 +518,7 @@
 
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
-import { SupabaseClient } from "@supabase/supabase-js";
+import { supabase } from "../services/supabaseClient";
 import "../Css/AddPeople.css"
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -548,40 +548,40 @@ const AddPeople = () => {
   const getInitialState = (type) => {
     return type === "business"
       ? {
-          profile_type: "business",
-          mobile_number: "",
-          business_name: "",
-          owner_name: "",
-          owner_prefix: "",
-          keywords: [],
-          description: "",
-          landline_code: "",
-          landline_number: "",
-          door_no: "",
-          street_name: "",
-          area: "",
-          city: "",
-          pincode: "",
-          email: "",
-          promo_code: "",
-          business_prefix: "M/s.",
-        }
+        profile_type: "business",
+        mobile_number: "",
+        business_name: "",
+        owner_name: "",
+        owner_prefix: "",
+        keywords: [],
+        description: "",
+        landline_code: "",
+        landline_number: "",
+        door_no: "",
+        street_name: "",
+        area: "",
+        city: "",
+        pincode: "",
+        email: "",
+        promo_code: "",
+        business_prefix: "M/s.",
+      }
       : {
-          profile_type: "person",
-          mobile_number: "",
-          person_name: "",
-          person_prefix: "",
-          profession: "",
-          landline_code: "",
-          landline_number: "",
-          door_no: "",
-          street_name: "",
-          area: "",
-          city: "",
-          pincode: "",
-          email: "",
-          promo_code: "",
-        };
+        profile_type: "person",
+        mobile_number: "",
+        person_name: "",
+        person_prefix: "",
+        profession: "",
+        landline_code: "",
+        landline_number: "",
+        door_no: "",
+        street_name: "",
+        area: "",
+        city: "",
+        pincode: "",
+        email: "",
+        promo_code: "",
+      };
   };
 
   const handleTypeSelection = (type) => {
@@ -681,50 +681,101 @@ const AddPeople = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    // Optional: get user ID if you're using Supabase Auth
-    const user_id = null; // or session?.user?.id;
+    try {
 
-    const cleanedData = Object.fromEntries(
-      Object.entries({
-        ...formData,
-        user_id,
-      }).map(([key, value]) => [key, value === "" ? null : value])
-    );
 
-    const { data: existingUser, error: checkError } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("mobile_number", cleanedData.mobile_number)
-      .single();
 
-    if (existingUser) {
+      if (signupError) {
+        Swal.fire({
+          icon: "error",
+          title: "Signup Error",
+          text: signupError.message,
+        });
+        return;
+      }
+
+      const userId = signupData.user?.id;
+      if (!userId) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Could not retrieve user ID after signup.",
+        });
+        return;
+      }
+
+      // 2. Check if mobile already exists in profiles
+      const { data: existingUser } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("mobile_number", formData.mobile_number)
+        .single();
+
+      if (existingUser) {
+        Swal.fire({
+          icon: "error",
+          title: "Registration Failed",
+          text: "Mobile number is already registered.",
+        });
+        return;
+      }
+
+      // 3. Prepare cleaned data including user_id
+      const cleanedData = Object.fromEntries(
+        Object.entries({
+          ...formData,
+          user_id: userId,
+        }).map(([key, value]) => [key, value === "" ? null : value])
+      );
+
+      // 4. Insert into profiles
+      // 4. Insert into profiles
+      const { data, error } = await supabase.from("profiles").insert([cleanedData]);
+
+      if (error) {
+        console.error("Supabase Error:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Submission Error",
+          text: "Error submitting form. Please try again later.",
+        });
+      } else {
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Form submitted successfully!",
+        });
+
+        // --- Send SMS after successful registration ---
+        const smsBody = encodeURIComponent(
+          `Dear sir,
+Signpost PHONE BOOK is a portal for Mobile Number Finder & Dialer with Digital Marketing. Please kindly view and verify the correctness of details on your firm, at the earliest.
+
+URL :- www.signpostphonebook.in
+User name :- ${formData.mobile_number}
+Password :- Signpost
+
+You can use the PHONE BOOK for your business promotion in any desired (Pincode) area so Entire Coimbatore`
+        );
+
+        const smsLink = `sms:${formData.mobile_number}?body=${smsBody}`;
+
+        setTimeout(() => {
+          window.location.href = smsLink;
+        }, 2000);
+        // ---------------------------------------------
+
+        setFormData(getInitialState(profileType));
+        setProfileType(null); // reset profile type after successful submit
+      }
+
+    } catch (err) {
+      console.error(err);
       Swal.fire({
         icon: "error",
-        title: "Registration Failed",
-        text: "Mobile number is already registered.",
+        title: "Unexpected Error",
+        text: "Something went wrong. Please try again later.",
       });
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from("profiles")
-      .insert([cleanedData]);
-
-    if (error) {
-      console.error("Supabase Error:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Submission Error",
-        text: "Error submitting form. Please try again later.",
-      });
-    } else {
-      Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: "Form submitted successfully!",
-      });
-      setFormData(getInitialState(profileType));
-      setProfileType(null); // reset profile type after successful submit
     }
   };
 
@@ -790,7 +841,7 @@ const AddPeople = () => {
 
           <p className="text-center mt-4 small">
             By Adding and inviting people, You’ll be rewarded for every
-           successful member.
+            successful member.
           </p>
         </div>
       </div>

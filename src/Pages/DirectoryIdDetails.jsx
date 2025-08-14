@@ -609,7 +609,7 @@ const DirectoryIdDetails = () => {
           {/* Right Enquiry Form */}
           <div className="col-lg-3 mt-4 mt-lg-0">
             <div className="card p-3 shadow-sm">
-              <h5>Enquire {profile.business_name || profile.person_name}</h5>
+              <h5>Send an Enquire {profile.business_name || profile.person_name}</h5>
               <textarea
                 className="form-control mb-2"
                 rows="4"

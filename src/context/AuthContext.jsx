@@ -7,7 +7,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
-  const navigate = useNavigate(); // ✅ hook for redirect
+  const navigate = useNavigate();  
 
   useEffect(() => {
     const checkUserValidity = async () => {

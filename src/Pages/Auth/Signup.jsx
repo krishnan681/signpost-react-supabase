@@ -1055,24 +1055,38 @@ const Signup = () => {
     return true;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validateForm()) return;
 
-    // Optional: get user ID if you're using Supabase Auth
-    const user_id = null; // or session?.user?.id;
+  try {
+  
+     
 
-    const cleanedData = Object.fromEntries(
-      Object.entries({
-        ...formData,
-        user_id,
-      }).map(([key, value]) => [key, value === "" ? null : value])
-    );
+    if (signupError) {
+      Swal.fire({
+        icon: "error",
+        title: "Signup Error",
+        text: signupError.message,
+      });
+      return;
+    }
 
-    const { data: existingUser, error: checkError } = await supabase
+    const userId = signupData.user?.id;
+    if (!userId) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Could not retrieve user ID after signup.",
+      });
+      return;
+    }
+
+    // 2. Check if mobile already exists in profiles
+    const { data: existingUser } = await supabase
       .from("profiles")
       .select("id")
-      .eq("mobile_number", cleanedData.mobile_number)
+      .eq("mobile_number", formData.mobile_number)
       .single();
 
     if (existingUser) {
@@ -1084,9 +1098,16 @@ const Signup = () => {
       return;
     }
 
-    const { data, error } = await supabase
-      .from("profiles")
-      .insert([cleanedData]);
+    // 3. Prepare cleaned data including user_id
+    const cleanedData = Object.fromEntries(
+      Object.entries({
+        ...formData,
+        user_id: userId,
+      }).map(([key, value]) => [key, value === "" ? null : value])
+    );
+
+    // 4. Insert into profiles
+    const { data, error } = await supabase.from("profiles").insert([cleanedData]);
 
     if (error) {
       console.error("Supabase Error:", error);
@@ -1104,7 +1125,16 @@ const Signup = () => {
       setFormData(getInitialState(profileType));
       setProfileType(null); // reset profile type after successful submit
     }
-  };
+  } catch (err) {
+    console.error(err);
+    Swal.fire({
+      icon: "error",
+      title: "Unexpected Error",
+      text: "Something went wrong. Please try again later.",
+    });
+  }
+};
+
 
   if (!profileType) {
     return (
