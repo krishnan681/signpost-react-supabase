@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../services/supabaseClient";
+import { supabase } from "../../src/services/supabaseClient";
 import Swal from "sweetalert2";
 
 const AuthContext = createContext();
