@@ -108,9 +108,11 @@
   import EditProfile from "./Components/EditProfile";
   import DirectoryIdDetails from "./Pages/DirectoryIdDetails";
   import PopularSearches from "./Components/PopularSearches";
-
+  import FindNumber from "./Pages/FindNumber";
   import FeatureLists from "./Components/FeatureLists";
   import LandingPageDataBase from "./Components/LandingPageDataBase";
+  import { FavoritesProvider } from "./context/FavoritesContext";
+  import Favourites from "./Components/Favourites";
 
   const App = () => {
     const location = useLocation();
@@ -121,6 +123,7 @@
     const shouldShowFooter = !hideFooterPaths.includes(location.pathname);
 
     return (
+      <FavoritesProvider>
       <>
         <Navbar />
         <div style={{ paddingTop: "80px" }}>
@@ -144,10 +147,13 @@
             {/* <Route path="/PopularSearches" element={<PopularSearches />} />   */}
             <Route path="/FeatureLists" element={<FeatureLists />} />  
             <Route path="/LandingPageDataBase" element={<LandingPageDataBase />} />  
+            <Route path="/FindNumber" element={<FindNumber />} />  
+              <Route path="/favourites" element={<Favourites />} />
           </Routes>
         </div>
         {shouldShowFooter && <FooterPage />}
       </>
+      </FavoritesProvider>
     );
   };
 

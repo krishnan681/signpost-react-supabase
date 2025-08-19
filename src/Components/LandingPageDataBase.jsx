@@ -176,7 +176,6 @@
 // };
 
 // export default LandingPageDataBase;
-
 import React, { useState, useEffect } from "react";
 import {
   FaSearch,
@@ -201,20 +200,18 @@ const LandingPageDataBase = () => {
 
   const { userData } = useAuth();
 
-  // Fetch data from Supabase with optional filters
+  // ✅ Fetch directory data with filters
   const fetchDirectoryData = async () => {
     let query = supabase
       .from("profiles")
       .select("*")
-      .order("user_id", { ascending: false });
+      .order("created_at", { ascending: false });
 
     if (searchName.trim()) {
       query = query.ilike("business_name", `%${searchName}%`);
     }
     if (professionSearch.trim()) {
-      query = query.or(
-        `profession.ilike.%${professionSearch}%,keywords.cs.{${professionSearch}}`
-      );
+      query = query.ilike("profession", `%${professionSearch}%`);
     }
 
     const { data, error } = await query;
@@ -226,6 +223,7 @@ const LandingPageDataBase = () => {
     }
   };
 
+  // ✅ Restrict browsing if not logged in
   const handleBrowseMore = () => {
     if (!userData) {
       Swal.fire({
@@ -236,10 +234,9 @@ const LandingPageDataBase = () => {
       });
       return;
     }
-    navigate("/DirectoryPage ");
+    navigate("/DirectoryPage");
   };
 
-  // ✅ Runs when Search button is clicked
   const handleSearchClick = () => {
     if (!userData) {
       Swal.fire({
@@ -253,12 +250,12 @@ const LandingPageDataBase = () => {
     fetchDirectoryData();
   };
 
-  // ✅ Initial load → fetch all records without login check
+  // ✅ Initial load
   useEffect(() => {
     supabase
       .from("profiles")
       .select("*")
-      .order("user_id", { ascending: false })
+      .order("created_at", { ascending: false })
       .then(({ data, error }) => {
         if (!error) setAllRecords(data);
       });
@@ -268,7 +265,6 @@ const LandingPageDataBase = () => {
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = allRecords.slice(indexOfFirstRow, indexOfLastRow);
-  const totalPages = Math.ceil(allRecords.length / rowsPerPage);
 
   return (
     <section id="database" className="msme-section">
@@ -294,15 +290,12 @@ const LandingPageDataBase = () => {
             />
             <input
               type="text"
-              placeholder="Search by profession or keywords..."
+              placeholder="Search by profession..."
               value={professionSearch}
-            onFocus={() => navigate(`/directoryPage`)}
-
+              onFocus={() => navigate(`/directoryPage`)}
               onChange={(e) => setProfessionSearch(e.target.value)}
             />
-            <button className="msme-search-btn"
-            onFocus={() => navigate(`/directoryPage`)}
-              >
+            <button className="msme-search-btn" onClick={handleSearchClick}>
               <FaSearch /> Search
             </button>
           </div>
@@ -324,33 +317,30 @@ const LandingPageDataBase = () => {
               {currentRows.length > 0 ? (
                 currentRows.map((item) => (
                   <tr key={item.id}>
-                    <td data-label="BUSINESS NAME">
+                    <td data-label="Business/Person Name">
                       <div className="name-wrapper">
                         <div className="icon-circle">
                           {item.business_name ? <FaStore /> : <FaUser />}
                         </div>
-                        <div>
-                          <div className="main-text">
-                            {item.business_name || item.person_name}
-                          </div>
+                        <div className="main-text">
+                          {item.business_name || item.person_name || "-"}
                         </div>
                       </div>
                     </td>
-                    <td data-label="CATEGORY">
+                    <td data-label="Product/Profession">
                       <div className="main-text">
-                        {item.keywords || item.profession}
-                      </div>
-                      <div className="sub-text">
-                        {Array.isArray(item.keywords)
-                          ? item.keywords.join(", ")
-                          : ""}
+                        {item.profession ||
+                          (Array.isArray(item.keywords)
+                            ? item.keywords.join(", ")
+                            : item.keywords || "-")}
                       </div>
                     </td>
-                    <td data-label="LOCATION">
+
+                    <td data-label="Location">
                       <div className="main-text">{item.city || "-"}</div>
                       <div className="sub-text">{item.pincode || "-"}</div>
                     </td>
-                    <td data-label="CONTACT">
+                    <td data-label="Contact">
                       <div className="main-text">
                         {item.mobile_number
                           ? item.mobile_number.slice(0, 5) + "xxxxx"
@@ -358,7 +348,7 @@ const LandingPageDataBase = () => {
                       </div>
                       <div className="sub-text">{item.email || "-"}</div>
                     </td>
-                    <td data-label="ACTION">
+                    <td data-label="Action">
                       <button className="contact-btn">
                         <FaPaperPlane /> Contact
                       </button>
@@ -375,32 +365,12 @@ const LandingPageDataBase = () => {
             </tbody>
           </table>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="pagination">
-              <button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => p - 1)}
-              >
-                Previous
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => (
-                <button
-                  key={i}
-                  className={currentPage === i + 1 ? "active" : ""}
-                  onClick={() => setCurrentPage(i + 1)}
-                >
-                  {i + 1}
-                </button>
-              ))}
-              <button
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((p) => p + 1)}
-              >
-                Next
-              </button>
-            </div>
-          )}
+          {/* Pagination (disabled for now) */}
+          <div className="pagination">
+            <button disabled>Previous</button>
+            <button className="active">1</button>
+            <button disabled>Next</button>
+          </div>
         </div>
 
         {/* CTA */}

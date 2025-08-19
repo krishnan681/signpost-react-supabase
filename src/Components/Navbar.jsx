@@ -164,8 +164,6 @@
 // export default Navbar;
 
 // .................
-
-
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "../Css/Navbar.css";
@@ -186,7 +184,7 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    closeOffcanvas(); // Close mobile nav if open
+    closeOffcanvas();
     Swal.fire({
       title: "Are you sure?",
       text: "Do you really want to log out?",
@@ -198,11 +196,7 @@ const Navbar = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         logout();
-        Swal.fire(
-          "Logged out",
-          "You have been logged out successfully.",
-          "success"
-        );
+        Swal.fire("Logged out", "You have been logged out successfully.", "success");
         navigate("/login");
       }
     });
@@ -217,6 +211,21 @@ const Navbar = () => {
       Swal.fire({
         title: "Login Required",
         text: "Please login to use this feature.",
+        icon: "info",
+        confirmButtonText: "OK",
+      });
+    }
+  };
+
+  // ✅ FindNumber handler (NEW FEATURE)
+  const handleFindNumber = () => {
+    closeOffcanvas();
+    if (userData) {
+      navigate("/FindNumber");
+    } else {
+      Swal.fire({
+        title: "Login Required",
+        text: "Please login to find numbers.",
         icon: "info",
         confirmButtonText: "OK",
       });
@@ -271,40 +280,44 @@ const Navbar = () => {
           <div className="offcanvas-body d-flex flex-column justify-content-between">
             <ul className="navbar-nav">
               <li className="nav-item">
-                <Link
-                  className="nav-link text-dark"
-                  to="/"
-                  onClick={closeOffcanvas}
-                >
+                <Link className="nav-link text-dark" to="/" onClick={closeOffcanvas}>
                   Home
                 </Link>
               </li>
               <li className="nav-item">
-                <Link
-                  className="nav-link text-dark"
-                  to="/AboutPage"
-                  onClick={closeOffcanvas}
-                >
+                <Link className="nav-link text-dark" to="/AboutPage" onClick={closeOffcanvas}>
                   About
                 </Link>
               </li>
               <li className="nav-item">
-                <Link
-                  className="nav-link text-dark"
-                  to="/ContactPage"
-                  onClick={closeOffcanvas}
-                >
+                <Link className="nav-link text-dark" to="/ContactPage" onClick={closeOffcanvas}>
                   Contact
                 </Link>
               </li>
               <li className="nav-item">
-                <button
-                  className="nav-link btn btn-link text-dark"
-                  onClick={handleAddPeople}
-                >
+                <button className="nav-link btn btn-link text-dark" onClick={handleAddPeople}>
                   ➕ Add People
                 </button>
               </li>
+
+              {/* ✅ NEW FEATURE: Find Number */}
+              <li className="nav-item">
+                <button className="continue-application" onClick={handleFindNumber}>
+                  <div>
+                    <div className="pencil"></div>
+                    <div className="folder">
+                      <div className="top">
+                        <svg viewBox="0 0 24 27">
+                          <path d="M1,0 L23,0 C23.55,0 24,0.45 24,1 L24,8.17 C24,8.7 23.79,9.21 23.41,9.58 L20.58,12.41 C20.21,12.79 20,13.29 20,13.82 L20,26 C20,26.55 19.55,27 19,27 L1,27 C0.45,27 0,26.55 0,26 L0,1 C0,0.45 0.45,0 1,0 Z"></path>
+                        </svg>
+                      </div>
+                      <div className="paper"></div>
+                    </div>
+                  </div>
+                  Find Number
+                </button>
+              </li>
+
               <li className="nav-item my-2">
                 <Link
                   className="btn btn-warning w-100"
@@ -327,10 +340,7 @@ const Navbar = () => {
                     </Link>
                   </li>
                   <li className="nav-item my-2">
-                    <button
-                      className="btn btn-danger w-100"
-                      onClick={handleLogout}
-                    >
+                    <button className="btn btn-danger w-100" onClick={handleLogout}>
                       Logout
                     </button>
                   </li>
@@ -338,20 +348,12 @@ const Navbar = () => {
               ) : (
                 <>
                   <li className="nav-item my-2">
-                    <Link
-                      className="btn btn-primary w-100"
-                      to="/login"
-                      onClick={closeOffcanvas}
-                    >
+                    <Link className="btn btn-primary w-100" to="/login" onClick={closeOffcanvas}>
                       Login
                     </Link>
                   </li>
                   <li className="nav-item my-2">
-                    <Link
-                      className="btn btn-success w-100"
-                      to="/signup"
-                      onClick={closeOffcanvas}
-                    >
+                    <Link className="btn btn-success w-100" to="/signup" onClick={closeOffcanvas}>
                       Sign Up
                     </Link>
                   </li>
@@ -372,22 +374,33 @@ const Navbar = () => {
           <Link className="nav-link text-dark" to="/ContactPage">
             Contact
           </Link>
-          <button
-            className="nav-link btn btn-link text-dark"
-            onClick={handleAddPeople}
-          >
+          <button className="nav-link btn btn-link text-dark" onClick={handleAddPeople}>
             ➕ Add People
           </button>
+
+          {/* ✅ Desktop "Find Number" */}
+          <button className="continue-application" onClick={handleFindNumber}>
+            <div>
+              <div className="pencil"></div>
+              <div className="folder">
+                <div className="top">
+                  <svg viewBox="0 0 24 27">
+                    <path d="M1,0 L23,0 C23.55,0 24,0.45 24,1 L24,8.17 C24,8.7 23.79,9.21 23.41,9.58 L20.58,12.41 C20.21,12.79 20,13.29 20,13.82 L20,26 C20,26.55 19.55,27 19,27 L1,27 C0.45,27 0,26.55 0,26 L0,1 C0,0.45 0.45,0 1,0 Z"></path>
+                  </svg>
+                </div>
+                <div className="paper"></div>
+              </div>
+            </div>
+            Find Number
+          </button>
+
           <Link className="btn btn-warning" to="/PostYourListing">
             Post your listing
           </Link>
 
           {userData ? (
             <>
-              <Link
-                to="/ProfilePage"
-                className="fw-bold text-dark text-decoration-none"
-              >
+              <Link to="/ProfilePage" className="fw-bold text-dark text-decoration-none">
                 👤 {userData.person_name || userData.business_name}
               </Link>
               <button className="btn btn-danger" onClick={handleLogout}>

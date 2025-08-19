@@ -311,20 +311,21 @@ const DirectoryIdDetails = () => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", id)
-        .single();
+useEffect(() => {
+  const fetchProfile = async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", id)  // fixed here
+      .single();
 
-      if (data) setProfile(data);
-      else console.error("Error fetching profile:", error);
-    };
+    if (data) setProfile(data);
+    else console.error("Error fetching profile:", error);
+  };
 
-    fetchProfile();
-  }, [id]);
+  fetchProfile();
+}, [id]);
+
 
   if (!profile) return <div className="p-4"></div>;
 
@@ -387,7 +388,7 @@ const DirectoryIdDetails = () => {
   return (
     <div>
       {/* Banner Carousel   - this is for showing their logo or front image  */}
-      <Carousel
+      {/* <Carousel
         className="mb-4 carousel-imagefordid"
         controls={false} // removes arrows
         indicators={true} // keeps dots
@@ -401,11 +402,11 @@ const DirectoryIdDetails = () => {
             />
           </Carousel.Item>
         ))}
-      </Carousel>
+      </Carousel> */}
 
       <div className="container mt-4">
         <div className="row">
-          {/* Left */}
+       
           <div className="col-lg-9">
             <div className="d-flex flex-wrap gap-3 align-items-start mb-3">
               <img
@@ -423,9 +424,9 @@ const DirectoryIdDetails = () => {
                   <span>
                     <strong>City:</strong> {profile.city}
                   </span>
-                  <span>
+                  {/* <span>
                     <strong>GST:</strong> {profile.gst || "N/A"}
-                  </span>
+                  </span> */}
                 </div>
                 <p>
                   <strong>Description:</strong> {profile.description}
@@ -433,7 +434,7 @@ const DirectoryIdDetails = () => {
               </div>
             </div>
             <div className="d-flex gap-2 mb-2">
-              {["about", "products", "gallery", "contact"].map((tab) => (
+              {["about", "contact"].map((tab) => (
                 <button
                   key={tab}
                   className={`btn btn-outline-primary ${
@@ -453,7 +454,7 @@ const DirectoryIdDetails = () => {
               </div>
             )}
 
-            {activeTab === "products" && (
+            {/* {activeTab === "products" && (
               <div>
                 <h5>Products</h5>
                 <div className="d-flex flex-wrap gap-4">
@@ -500,7 +501,7 @@ const DirectoryIdDetails = () => {
                   })}
                 </div>
 
-                {/* Lightbox with captions */}
+                
                 <Lightbox
                   open={lightboxOpen}
                   close={() => setLightboxOpen(false)}
@@ -576,7 +577,8 @@ const DirectoryIdDetails = () => {
                   plugins={[Thumbnails, Zoom]}
                 />
               </div>
-            )}
+            )} */}
+            
             {activeTab === "contact" && (
               <div>
                 <h5>Contact</h5>
@@ -584,7 +586,7 @@ const DirectoryIdDetails = () => {
                   <strong>Phone:</strong> {profile.mobile_number}
                 </p>
                 <p>
-                  <strong>Email:</strong> {profile.email}
+                  <strong>Email:</strong> {profile.email || "Not Given" }
                 </p>
                 <p>
                   <strong>Address:</strong> {profile.door_no},{" "}

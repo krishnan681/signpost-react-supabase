@@ -286,11 +286,13 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import Swal from "sweetalert2";
-import debounce from "lodash.debounce"; // npm i lodash.debounce
 import RecentlyListEnquiryModal from "../Components/RecentlyListEnquiryModal";
 import "../Css/DirectoryPage.css";
- 
-const itemsPerPage = 5;
+import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { useFavorites } from "../context/FavoritesContext";
+import FavoriteModal from "../Components/FavoriteModal";
+
+const itemsPerPage = 10;
 
 const DirectoryPage = () => {
     const location = useLocation();
@@ -302,7 +304,7 @@ const DirectoryPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
 
     const [showModal, setShowModal] = useState(false);
-    const [selectedProfile, setSelectedProfile] = useState(null);  
+    const [selectedProfile, setSelectedProfile] = useState(null);
 
     const queryParams = new URLSearchParams(location.search);
     const businessNameQuery =
@@ -321,24 +323,39 @@ const DirectoryPage = () => {
         "Hardware",
         "Automation",
         "Chemicals",
-    ]; // Fetch data from Supabase
+    ];
+
+    const [showFavoriteModal, setShowFavoriteModal] = useState(false);
+    const [selectedFavoriteItem, setSelectedFavoriteItem] = useState(null);
+
+    const handleOpenFavoriteModal = (item) => {
+        setSelectedFavoriteItem(item);
+        setShowFavoriteModal(true);
+    };
+
+    const handleSaveFavorite = (option, item) => {
+        // Here you can handle saving with category (option)
+        addFavorite({ ...item, category: option });
+        Swal.fire("Saved!", `${item.business_name || item.person_name} saved to ${option}`, "success");
+    };
 
     const fetchDirectoryData = async () => {
         const { data, error } = await supabase
             .from("profiles")
             .select("*")
-            .order("user_id", { ascending: false });
+            .order("created_at", { ascending: false });
 
         if (!error) setAllRecords(data);
     };
 
     useEffect(() => {
         fetchDirectoryData();
-    }, []);  
+    }, []);
 
-  
+    const { favorites, addFavorite, removeFavorite } = useFavorites();
+
     let matchedRecords = [];
-    let recommendedRecords = [];  
+    let recommendedRecords = [];
 
     const currentBusinessNameQuery = searchBusinessName.toLowerCase();
     const currentKeywordsQuery = searchKeywords.toLowerCase();
@@ -347,11 +364,8 @@ const DirectoryPage = () => {
         matchedRecords = allRecords;
         recommendedRecords = [];
     } else if (currentBusinessNameQuery || currentKeywordsQuery) {
-        const searchTerm = (
-            currentBusinessNameQuery +
-            " " +
-            currentKeywordsQuery
-        ).trim();
+        const searchTerm =
+            (currentBusinessNameQuery + " " + currentKeywordsQuery).trim();
 
         matchedRecords = allRecords.filter((item) => {
             const searchableFields = [
@@ -359,13 +373,12 @@ const DirectoryPage = () => {
                 item.person_name,
                 item.profession,
                 item.description,
-                item.owner_name,
-                item.keywords
-                    ? Array.isArray(item.keywords)
-                        ? item.keywords.join(", ")
-                        : item.keywords
+                item.products
+                    ? Array.isArray(item.products)
+                        ? item.products.join(", ")
+                        : item.products
                     : "",
-            ];  
+            ];
 
             return searchTerm
                 .toLowerCase()
@@ -381,9 +394,8 @@ const DirectoryPage = () => {
             (item) => !matchedRecords.includes(item)
         );
     } else {
-        // No search input, show recommended allRecords
         recommendedRecords = allRecords;
-    } // Determine list to show before pagination
+    }
 
     const showList = showAll
         ? matchedRecords
@@ -395,7 +407,10 @@ const DirectoryPage = () => {
         list.filter((item) =>
             filteredCategory === "All"
                 ? true
-                : (item.product || "")
+                : (Array.isArray(item.products)
+                    ? item.products.join(", ")
+                    : item.products || ""
+                )
                     .toLowerCase()
                     .includes(filteredCategory.toLowerCase())
         );
@@ -412,18 +427,16 @@ const DirectoryPage = () => {
         };
     };
 
-    const { data: paginatedData, totalPages } = paginated(showList); // Highlight matching parts in text for search inputs
+    const { data: paginatedData, totalPages } = paginated(showList);
 
     const highlightMatch = (text) => {
         if (!text) return "";
 
         let combinedQuery = (searchBusinessName + " " + searchKeywords).trim();
+        if (!combinedQuery) return text;
 
-        if (!combinedQuery) return text; // Escape regex special chars in combinedQuery
-
-        const escapedQuery = combinedQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // Split by space for multiple terms
-        const terms = escapedQuery.split(/\s+/); // Build regex matching any of the terms (case-insensitive)
-
+        const escapedQuery = combinedQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const terms = escapedQuery.split(/\s+/);
         const regex = new RegExp(`(${terms.join("|")})`, "gi");
 
         const parts = text.split(regex);
@@ -469,134 +482,116 @@ const DirectoryPage = () => {
         setShowModal(true);
     };
 
-    const renderCard = (item, index) => (
-        <Link
-            to={`/profile/${item.user_id || item.id || index}`}
-            key={item.user_id || item.id || index}
-            className="text-decoration-none text-dark"
-            onClick={handleCardClick}
-        >
+    const renderCard = (item) => {
+        const isFavorite = favorites.some((fav) => fav.id === item.id);
 
-            <div
-                className={`mb-4 shadow-sm directory-card ${item.is_premium ? "bg-light-pink" : "non-premium-card"
-                    }`}
+        const toggleFavorite = (e) => {
+            e.preventDefault();
+            if (isFavorite) {
+                removeFavorite(item.id);
+            } else {
+                addFavorite(item);
+            }
+        };
+
+        return (
+            <Link
+                to={`/profile/${item.id}`}
+                key={item.id}
+                className="text-decoration-none text-dark"
+                onClick={handleCardClick}
             >
+                <div
+                    className={`mb-4 shadow-sm directory-card ${item.is_prime ? "bg-light-pink" : "non-premium-card"
+                        }`}
+                >
+                    <div className="card-premium">
+                        <img
+                            src={item.profile_image || "/placeholder-logo.png"}
+                            alt={item.business_name || item.person_name}
+                        />
 
-                <div className="card-premium">
+                        <div className="card-info">
+                            <h5>
+                                {highlightMatch(
+                                    item.business_name ||
+                                    `${item.person_prefix || ""} ${item.person_name || ""}`
+                                )}
+                            </h5>
+                            <p>
+                                <strong>Location:</strong> {item.city || "N/A"}
+                            </p>
+                            <p>
+                                <strong>Description:</strong>{" "}
+                                {item.description || "No description available"}
+                            </p>
+                            <p className="card-text text-muted small mb-0">
+                                {item.user_type === "business" ? (
+                                    <>
+                                        <strong>Products:</strong>{" "}
+                                        {Array.isArray(item.keywords) && item.keywords.length > 0
+                                            ? item.keywords.join(", ")
+                                            : "No products listed"}
+                                    </>
+                                ) : (
+                                    <>
+                                        <strong>Profession:</strong>{" "}
+                                        {item.profession || "Not specified"}
+                                    </>
+                                )}
+                            </p>
+                        </div>
 
-                    <img
-                        src={item.profile_image || "/placeholder-logo.png"}
-                        alt={item.business_name || item.person_name}
-                    />
+                        <div className="card-buttons d-flex gap-2">
+                            <button className="btn btn-danger">View Full Profile</button>
+                            <button
+                                className="btn btn-warning"
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    openEnquiryModal(item);
+                                }}
+                            >
+                                Enquire
+                            </button>
+                            <button
+                                className="btn btn-success"
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleCall(item.mobile_number);
+                                }}
+                            >
+                                Call
+                            </button>
 
-                    <div className="card-info">
+                            {/* Favorite Button */}
+                            <button
+                                className="btn btn-outline-primary"
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleOpenFavoriteModal(item);
+                                }}
+                            >
+                                {isFavorite ? <FaHeart color="red" /> : <FaRegHeart />}
+                            </button>
 
-                        <h5>
-
-                            {highlightMatch(
-                                item.business_name ||
-                                `${item.prefix || ""} ${item.person_name || ""}`
-                            )}
-
-                        </h5>
-
-                        <p>
-                            <strong>Location:</strong> {item.city || "N/A"}
-
-                        </p>
-
-                        <p>
-                            <strong>Description:</strong>
-                            {item.description || "No description available"}
-                        </p>
-
-                        <p className="card-text text-muted small mb-0">
-
-                            {item.profile_type === "business" ? (
-                                <>
-                                    <strong>Products:</strong>
-                                    {Array.isArray(item.keywords)
-                                        ? item.keywords.join(", ")
-                                        : item.keywords || "No products listed"}
-
-                                </>
-                            ) : (
-                                <>
-                                    <strong>Profession:</strong>
-                                    {item.profession || "Not specified"}               
-                                </>
-                            )}
-
-                        </p>
-
+                        </div>
                     </div>
-
-                    <div className="card-buttons">
-
-                        <button className="btn btn-danger">View Full Profile</button>
-
-                        <button
-                            className="btn btn-warning"
-                            type="button"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                openEnquiryModal(item);
-                            }}
-                        >
-                            Enquire            
-                        </button>
-
-                        <button
-                            className="btn btn-success"
-                            type="button"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                handleCall(item.mobile_number);
-                            }}
-                        >
-                            Call             
-                        </button>
-
-                    </div>
-
                 </div>
+            </Link>
 
-            </div>
 
-        </Link>
-    );
+        );
+    };
+
+
+
 
     return (
         <div className="directory-container">
-            {/* Sidebar */}     
-            <div className="directory-sidebar">
-                <h4>Filters</h4>       
-                <div className="form-group mt-3">
-                    <label htmlFor="categorySelect">Category</label>        
-                    <select
-                        id="categorySelect"
-                        className="form-control"
-                        value={filteredCategory}
-                        onChange={(e) => {
-                            setFilteredCategory(e.target.value);
-                            setCurrentPage(1);
-                        }}
-                    >
-
-                        {categories.map((cat, i) => (
-                            <option key={i} value={cat}>
-                                {cat}              
-                            </option>
-                        ))}
-
-                    </select>
-
-                </div>
-
-            </div>
-            {/* Content */}     
             <div className="directory-content">
-                {/* Search Box Container */}
                 <div className="seaerch-boxxes mb-4 d-flex flex-column flex-md-row gap-2">
                     <input
                         type="text"
@@ -615,28 +610,27 @@ const DirectoryPage = () => {
                         style={{ minWidth: "200px" }}
                     />
                 </div>
-                {/* Results */}        
+
                 {showList.length > 0 ? (
                     paginatedData.map((item, index) => renderCard(item, index))
                 ) : (
                     <div className="p-4">
-                        <p>No results found for your search.</p>         
+                        <p>No results found for your search.</p>
                     </div>
                 )}
-                {/* Pagination */}        
+
                 {totalPages > 1 && (
                     <div className="pagination-controls">
-
                         <button
                             className="btn btn-sm btn-outline-secondary"
                             onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                             disabled={currentPage === 1}
                         >
-                            Prev            
+                            Prev
                         </button>
 
                         <span>
-                            Page {currentPage} of {totalPages}           
+                            Page {currentPage} of {totalPages}
                         </span>
 
                         <button
@@ -644,25 +638,30 @@ const DirectoryPage = () => {
                             onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
                             disabled={currentPage === totalPages}
                         >
-                            Next             
+                            Next
                         </button>
-
                     </div>
                 )}
-
             </div>
-            {/* Enquiry Modal */}     
+
             <RecentlyListEnquiryModal
                 show={showModal}
                 onClose={() => setShowModal(false)}
                 selectedBusiness={selectedProfile}
             />
 
+            <FavoriteModal
+                show={showFavoriteModal}
+                onClose={() => setShowFavoriteModal(false)}
+                onSave={handleSaveFavorite}
+                selectedItem={selectedFavoriteItem}
+            />
         </div>
     );
 };
 
 export default DirectoryPage;
+
 
 // import { useEffect, useState } from "react";
 // import { useLocation, Link } from "react-router-dom";

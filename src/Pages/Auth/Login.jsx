@@ -41,28 +41,33 @@ const Login = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    if (password !== DEFAULT_PASSWORD) {
-      setMessage("❌ Invalid password");
-      return;
-    }
+const handleLogin = async (e) => {
+  e.preventDefault();
 
-    const { data: user } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("mobile_number", mobile)
-      .single();
+  // fetch user by mobile number
+  const { data: user, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("mobile_number", mobile)
+    .single();
 
-    if (!user) {
-      setMessage("❌ User not found");
-      return;
-    }
+  if (error || !user) {
+    setMessage("❌ User not found");
+    return;
+  }
 
-    login(user);
-    setMessage("✅ Login successful!");
-    setTimeout(() => navigate("/LandingPage"), 1000);
-  };
+  // check password from DB
+  if (user.password !== password) {
+    setMessage("❌ Invalid password");
+    return;
+  }
+
+  // login success
+  login(user);
+  setMessage("✅ Login successful!");
+  setTimeout(() => navigate("/LandingPage"), 1000);
+};
+
 
   return (
     <div className="login-container">

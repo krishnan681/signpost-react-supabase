@@ -351,3 +351,105 @@ CREATE TABLE public.profiles (
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+new Databse Structure 
+
+
+
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.profiles (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  created_at timestamp without time zone DEFAULT now(),
+  user_type text CHECK (user_type = ANY (ARRAY['person'::text, 'business'::text])),
+  mobile_number text NOT NULL UNIQUE,
+  password text NOT NULL DEFAULT 'signpost'::text,
+  person_name text,
+  person_prefix text,
+  profession text,
+  business_name text,
+  business_prefix text,
+  keywords ARRAY,
+  description text,
+  address text,
+  city text,
+  pincode text,
+  email text,
+  landline text,
+  landline_code text,
+  promo_code text,
+  profile_image text,
+  is_prime boolean DEFAULT false,
+  CONSTRAINT profiles_pkey PRIMARY KEY (id)
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+background: radial-gradient(69.53% 69.8% at 50% 50%, #16B450 0%, #078736 100%);
